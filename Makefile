@@ -27,4 +27,5 @@ roll:	moments roll.R
 	sh run-r roll.R
 
 render.avi: render.wav infile.avi
-	mencoder -ovc copy -oac copy infile.avi -audiofile render.wav -o render.avi
+	ffmpeg -i infile.avi -i render.wav  -map 0.0:1 -map 1:0 -f avi -vcodec copy -acodec copy render.avi
+
