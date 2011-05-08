@@ -6,6 +6,9 @@ play:	render.avi
 Video-Gen: 	VideoGen.cpp
 	g++ -I /usr/local/include/opencv -lm $(OPENCV) VideoGen.cpp -o Video-Gen   
 
+GUI-Video-Gen: 	VideoGen.cpp
+	g++ -DGUI=1 -I /usr/local/include/opencv -lm $(OPENCV) VideoGen.cpp -o GUI-Video-Gen   
+
 fuck: 	fuck.cpp
 	g++ -I /usr/local/include/opencv -lm -lcv -lopencv_highgui -lcvaux fuck.cpp -o fuck   
 
