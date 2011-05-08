@@ -115,6 +115,7 @@ int main(int argc, char *argv[])
 
 
     //SIFT
+    /* 
     std::vector<char *> descv;
     descv.push_back("SIFT");
     descv.push_back("SURF");
@@ -132,7 +133,7 @@ int main(int argc, char *argv[])
       // now we have keypoints in a vector and the descriptors!
       printf("\t\"%s\":{\n",descname);
       printf("\t\t\"nkeypoints\":%zd\n", keypoints.size());
-      /*
+
         printf(",");
       printf("\t\t\"keypoints\":[\n");
       for (int i = 0 ; i < keypoints.size(); i++ ) {
@@ -152,12 +153,12 @@ int main(int argc, char *argv[])
         printf("}\n");
       }
       printf("]");
-      */
+
       printf("}\n");
     }
 
     printf(",\n");
-
+  */
     Mat diff;
     absdiff(gray,lastGray,diff);
     meanStdDev(diff, mean, stddev);
@@ -172,6 +173,7 @@ int main(int argc, char *argv[])
 #ifdef GUI
     if ( (cvWaitKey(1) & 255) == 27 ) break;
 #endif
+    fprintf(stderr,"Frame: %d ",count);
     count++;
   }
   printf("]\n");
