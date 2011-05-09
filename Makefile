@@ -7,9 +7,9 @@ RSCRIPT=/usr/bin/Rscript
 CAT=/bin/cat
 CSOUND=/usr/bin/csound
 FFMPEG=/usr/bin/ffmpeg
-
+MPLAYER=/usr/bin/mplayer
 play: render.avi
-	mplayer render.avi
+	$(MPLAYER) render.avi
 
 Video-Gen: 	VideoGen.cpp
 	g++ -I /usr/local/include/opencv -lm $(OPENCV) VideoGen.cpp -o Video-Gen   
@@ -32,3 +32,12 @@ render.wav: render.sco $(ORC)
 render.avi: render.wav infile.avi
 	$(FFMPEG) -y -i infile.avi -i render.wav  -map 0.0:1 -map 1:0 -f avi -vcodec copy -acodec copy render.avi
 
+render.ogv: render.avi
+	/usr/bin/ffmpeg2theora -v 3 -a 10 render.avi
+
+render.mp4: render.avi
+	ffmpeg -i render.avi -vcodec libx264 -vpre slow -crf 22 -threads 0 render.mp4
+render.webm: render.avi
+	mencoder render.avi -idx -ovc copy -oac copy -o render.clean.avi
+	ffmpeg -y -i render.clean.avi -threads 0 -f webm -vcodec libvpx -deinterlace -g 120 -level 216 -profile 0 -qmax 42 -qmin 10 -rc_buf_aggressivity 0.95 -vb 2M -acodec libvorbis -aq 90 -ac 1 render.webm
+	rm render.clean.avi

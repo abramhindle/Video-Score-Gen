@@ -11,7 +11,7 @@ pushd $T && \
 $P/Video-Gen > infile.json && \
 perl $P/json-stats.pl < infile.json > video.csv 
 Rscript $P/score.R > score.sco && \
-cat $P/fm-xy-nogui.sco score.sco > render.sco && \
+cat $P/$SCORE score.sco > render.sco && \
 cp $P/$ORC ./render.orc && \
 csound -dm6 -o render.wav render.orc render.sco  && \
 ffmpeg -y -i infile.avi -i render.wav  -map 0.0:1 -map 1:0 -f avi -vcodec copy -acodec copy render.avi
