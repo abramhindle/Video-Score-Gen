@@ -1,0 +1,23 @@
+#!/bin/bash
+# http://maketecheasier.com/encode-webm-videos-for-youtube-in-linux/2011/01/26
+#
+#    vcodec=libvpx
+#    g=120
+#    rc_lookahead=16
+#    level=216
+#    profile=0
+#    qmax=42
+#    qmin=10
+#    vb=2M
+#    #ignored unless using -pass 2
+#    maxrate=24M
+#    minrate=100k
+FILE=`tempfile`
+rm -f $FILE
+INPUTVIDEO=$1
+INPUTAUDIO=$2
+mencoder -i $INPUTVIDEO -idx -ovc copy -oac copy -o infile.clean.avi
+ffmpeg -threads 4 -i infile.clean.avi -s 640x480 -r 30 -vpre libvpx-720p -b 3900k -pass 1 -an -f webm -y $FILE.webm
+ffmpeg -threads 4 -i infile.clean.avi -s 640x480 -r 30 -i $INPUTAUDIO -map 0.0:1 -map 1:0 -vpre libvpx-720p -b 3900k -pass 2 -acodec libvorbis -ab 100k -ar 44100 -f webm -y $FILE.webm
+#ffmpeg -y -i infile.avi -i render.wav  -map 0.0:1 -map 1:0 -f avi -vcodec copy -acodec copy render.avi
+mv $FILE.webm `basename $INPUTVIDEO`.webm
