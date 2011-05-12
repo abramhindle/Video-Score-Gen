@@ -1,7 +1,13 @@
 library(zoo)
 library(corrplot)
+
+
 v<-read.csv("video.csv",header=TRUE,sep=",")
 
+zna <- function(v) {
+  v[!is.finite(v)] <- 0
+  v
+}
 myCorPlot <- function(v,order="PCA",method="spearman") {
   corrr <- cor(v,method=method)
   corrr[!is.finite(corrr)] <- 0
@@ -39,6 +45,11 @@ cs4 <- function(instr,when,dur,p4) {
   write(sprintf("i%s %f %f %f", as.character(instr), when,dur,p4),file="")
 }
 
+cs3 <- function(instr,when,dur) {
+  write(sprintf("i%s %f %f", as.character(instr), when,dur),file="")
+}
+
+
 cs5 <- function(instr,when,dur,p4,p5) {
   write(sprintf("i%s %f %f %f %f", as.character(instr), when,dur,p4,p5),file="")
 }
@@ -64,10 +75,10 @@ originalScore <- function() {
   x$roll50Central <- ourRoll( x$central6, 50)
                                         #x$features  <- v$nsift
   x$frame     <- v$frame
-  x$time      <- x$frame / 30
+  x$time      <- x$frame / v$fps
   len <- length(x$time)
   
-  fps = 1/30.0
+  fps = 1/v$fps[1]
   
   
   for(i in sample(c(1:len),round(.3*len))) {
@@ -93,7 +104,8 @@ fmScore <- function() {
 
   x <- c()
   x$frame <- v$frame
-  x$time      <- x$frame / 30
+  x$time      <- x$frame / v$fps
+  FPS <- v$fps[1]
   len <- length(x$time)
   x$m <- v$mean
   x$md <- v$meandiff
@@ -110,14 +122,14 @@ fmScore <- function() {
   
   x$hus       <- ourScale( v$hu0 )
   x$sinePitch <- 20+1000*(1-x$sds)#x$rollMax50Hu
-  x$sineAmp <- 800*x$mds + 100
+  x$sineAmp <- 1200*x$mds + 100
  
-  x$contSineAmp <- 4000*lowess(ourScale(v$stddiff),f=2/3)$y
+  x$contSineAmp <- 6000*lowess(ourScale(v$stddiff),f=2/3)$y
   x$contSineFreq <- 40+200*lowess(ourScale(v$central5+v$central6),f=1/10)$y
   x$fmAmp <- 500*ourScale(lowess(v$red7+v$green7+v$blue7,f=1/10)$y)
 
   ourColorScale <- function(x) {
-    1 - ourScale(x)
+    0.5*ourScale(x)
   }
   x$scaleRed0 <- ourColorScale(v$red0)
   x$scaleRed1 <- ourColorScale(v$red1)
@@ -155,9 +167,9 @@ fmScore <- function() {
     cs4("\"Pitch\"",x$time[t],0,x$pitch[t] )
     cs4("\"FMAmp\"",x$time[t],0,x$fmAmp[t] )
     #
-    cs5("\"Sine\"",jt(x$time[t]),2/30.0,x$sineAmp[t], x$sinePitch[t])
-    cs5("\"Sine\"",jt(x$time[t]),2/30.0,x$sineAmp[t], 1.1*x$sinePitch[t])
-    cs5("\"Sine\"",jt(x$time[t]),2/30.0,x$sineAmp[t], 0.95*x$sinePitch[t])
+    cs5("\"Sine\"",jt(x$time[t]),2/FPS,x$sineAmp[t], x$sinePitch[t])
+    cs5("\"Sine\"",jt(x$time[t]),2/FPS,x$sineAmp[t], 1.1*x$sinePitch[t])
+    cs5("\"Sine\"",jt(x$time[t]),2/FPS,x$sineAmp[t], 0.95*x$sinePitch[t])
     #
     cs4("\"ContSineFreq\"",x$time[t],0,x$contSineFreq[t])
     cs4("\"ContSineAmp\"" ,x$time[t],0,x$contSineAmp[t])
@@ -192,4 +204,69 @@ fmScore <- function() {
     
   }
 }
-fmScore()
+#fmScore()
+ourColorScale <- function(x) {
+  0.5*ourScale(x)
+}
+harmScoreObj <- function(v) {
+  x <- c()
+  x$frame <- v$frame
+  FPS <- v$fps[1]
+  x$time      <- x$frame / FPS
+  len <- length(x$time)
+  x$m <- v$mean
+  x$md <- v$meandiff
+  x$mds <- ourScale(x$md)
+  x$s <- v$std
+  x$ss <- ourScale(v$std)
+  
+  x$sd <- v$stddiff
+  x$sds <- ourScale(x$sd)
+  x$scale <- 1-lowess(.1 + 0.9*ourScale(ourRoll(x$md,180,align="left")),f=1/3)$y
+  x$pitch <- 1-lowess(ourScale(ourRollMax(v$central6,100)),f=1/10)$y - 0.1*x$ss
+  x$roll50Hu <- ourScale( ourRoll( v$hu0,50 ) )
+  x$rollMax50Hu <- ourScale( ourRollMax( v$hu0,50 ) )
+  
+  x$hus       <- ourScale( v$hu0 )
+  
+  #x$cps <- 20 + 1500*exp(4*x$mds)/exp(4)
+  x$cps <- zna(rollmean(x$mds, na.pad=1, 50, align="left")) - zna(rollmean(x$mds, na.pad=1, 50, align="center"))
+  x$cps[!is.finite(x$cps)] <- 0
+  x$cps <- 20+320*ourScale( lowess(v$blue0 + v$blue7,f=1/10)$y)
+  x$amp <- 100 + 100*x$sds
+  x$mod <- 1 + ourScale(lowess(x$hus,f=1/10)$y)
+  x$motion <- zna(rollmean(x$mds, na.pad=1, FPS, align="right"))
+
+  x$hucps <- 320 + 1000*ourScale(ourRollMax(ourScale(v$spacial0),50,align="left"))
+  
+  x
+}
+harmScore <- function(x) {  
+  len <- length(x$time)
+  med <- median(x$motion)
+  mea <- mean(x$motion)
+  sdd <- sd(x$motion)
+  hmea <- mean(x$hus)
+  cs4("\"RepeatingGBEB\"", 0,-1,0.1);
+  for (t in c(1:len)) {
+    if (x$motion[t] > median(med)) {
+      #cs5("\"GBEG\""     ,x$time[t],0.3,x$motion[t]*x$amp[t], x$cps[t])
+      cs5("\"DT3\""     ,x$time[t],0.3,x$amp[t], x$cps[t])
+    }
+    if (x$motion[t] > mea + sdd) {
+      cs5("\"GB\""     ,x$time[t],1.0,x$amp[t], x$cps[t])
+      cs5("\"GBNoise\""     ,x$time[t],1.0,x$amp[t], 3*x$cps[t])
+
+    }
+    if (x$hus[t] > hmea) {
+      cs5("\"GBNoise\""     ,x$time[t],1.0,x$amp[t], 3*x$hucps[t])
+    }
+
+    cs4("\"GBEGModSet\""     ,x$time[t],0, x$mod[t])
+    cs4("\"GBEGCpsSet\""     ,x$time[t],0, x$cps[t] )
+    cs4("\"GBEGAmpSet\""     ,x$time[t],0, 0.01*x$amp[t] )    
+  }
+}
+
+harm <- harmScoreObj(v)
+harmScore(harm)

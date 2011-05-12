@@ -1,6 +1,8 @@
 THISPATH=.
-SCORE=fm-xy-nogui.sco
-ORC=fm-xy-nogui.orc
+#SCORE=fm-xy-nogui.sco
+#ORC=fm-xy-nogui.orc
+SCORE=harmonics.sco
+ORC=harmonics.orc
 OPENCV=-lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_objdetect -lopencv_video 
 PERL=/usr/bin/perl
 RSCRIPT=/usr/bin/Rscript
@@ -9,7 +11,7 @@ CSOUND=/usr/bin/csound
 FFMPEG=/usr/bin/ffmpeg
 MPLAYER=/usr/bin/mplayer
 play: render.avi
-	$(MPLAYER) render.avi
+	$(MPLAYER) -ni -idx render.avi
 
 Video-Gen: 	VideoGen.cpp
 	g++ -I /usr/local/include/opencv -lm $(OPENCV) VideoGen.cpp -o Video-Gen   
@@ -23,8 +25,8 @@ video.csv:	infile.json json-stats.pl
 score.sco: score.R video.csv
 	$(RSCRIPT) $(THISPATH)/score.R > score.sco
 
-render.sco: $(SCO) $(ORC) score.sco
-	$(CAT) $(THISPATH)/fm-xy-nogui.sco score.sco > render.sco
+render.sco: $(SCORE) $(ORC) score.sco
+	$(CAT) $(THISPATH)/$(SCORE) score.sco > render.sco
 
 render.wav: render.sco $(ORC)
 	$(CSOUND) -dm6 -o render.wav $(ORC) render.sco 
@@ -38,6 +40,6 @@ render.ogv: render.avi
 render.mp4: render.avi
 	ffmpeg -i render.avi -vcodec libx264 -vpre slow -crf 22 -threads 0 render.mp4
 render.webm: render.avi
-	mencoder render.avi -idx -ovc copy -oac copy -o render.clean.avi
+	mencoder render.avi -idx -ovc copy -oac copy -o render.clean.avi || ln render.avi render.clean.avi
 	ffmpeg -y -i render.clean.avi -threads 0 -f webm -vcodec libvpx -deinterlace -g 120 -level 216 -profile 0 -qmax 42 -qmin 10 -rc_buf_aggressivity 0.95 -vb 2M -acodec libvorbis -aq 90 -ac 1 render.webm
 	rm render.clean.avi

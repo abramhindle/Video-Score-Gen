@@ -40,14 +40,14 @@ int main(int argc, char *argv[])
     
     
     const char * startStr = (count==0)?"":",\n";
-    printf("%s{ \"type\":\"frame\", \"frame\":%d, \"channels\":%d, \"BPP\":%d, \"W\":%d, \"H\":%d, \"WS\":%d,\n", 
+    printf("%s{ \"type\":\"frame\", \"frame\":%d, \"channels\":%d, \"BPP\":%d, \"W\":%d, \"H\":%d, \"WS\":%d, \"FPS\":%d,\n", 
            startStr,
            count,
            imgI->nChannels,
            imgI->depth,
            imgI->width,
            imgI->height,
-           imgI->widthStep);
+           imgI->widthStep, fps);
 #ifdef GUI
     cvShowImage(WINDOW, img );
 #endif    

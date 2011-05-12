@@ -9,6 +9,7 @@ my $arr  = decode_json $txt;
 my $first = 1;
 foreach my $entry (@$arr) {
     my $frame    = $entry->{frame};
+    my $fps      = $entry->{FPS};
     my $mean     = $entry->{mean};
     my $std      = $entry->{std};
     my $meandiff = $entry->{meandiff};
@@ -24,7 +25,7 @@ foreach my $entry (@$arr) {
     if ($first) {
         $first=!$first;
         my ($spc,$cen,$huc,$red,$green,$blue) = map { 0 } (0..10);
-        print join(",","frame",
+        print join(",","frame","fps",
                    "mean",
                    "std",
                    "meandiff",
@@ -38,7 +39,7 @@ foreach my $entry (@$arr) {
                    "nsift",
                    "nsurf").$/;
     }
-    print join(",", $frame, 
+    print join(",", $frame,$fps, 
                $mean,$std,$meandiff,$stddiff,
                @spacial, @central, @hu, @red, @green, @blue, $nsift, $nsurf),$/
 ;
