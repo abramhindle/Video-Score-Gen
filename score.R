@@ -234,7 +234,9 @@ harmScoreObj <- function(v) {
   x$cps[!is.finite(x$cps)] <- 0
   x$cps <- 20+320*ourScale( lowess(v$blue0 + v$blue7,f=1/10)$y)
   x$amp <- 100 + 100*x$sds
-  x$mod <- 1 + ourScale(lowess(x$hus,f=1/10)$y)
+  #x$mod <- 1 + ourScale(lowess(x$hus,f=1/10)$y)
+  #x$mod <- exp(2.5 + 2.5*(ourScale(v$spacial0) - median(ourScale(v$spacial0))))
+  x$mod <- ourRollMax(2.5 + 2.5*(ourScale(v$spacial0) - median(ourScale(v$spacial0))),10*v$fps[1])
   x$motion <- zna(rollmean(x$mds, na.pad=1, FPS, align="right"))
 
   x$hucps <- 320 + 1000*ourScale(ourRollMax(ourScale(v$spacial0),50,align="left"))

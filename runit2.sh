@@ -1,6 +1,8 @@
 #!/bin/bash
-SCORE=fm-xy-nogui.sco
-ORC=fm-xy-nogui.orc
+#SCORE=fm-xy-nogui.sco
+#ORC=fm-xy-nogui.orc
+SCORE=harmonics.sco
+ORC=harmonics.orc
 B=`basename "$1"`
 T=`tempfile`
 rm -f $T
