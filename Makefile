@@ -16,6 +16,9 @@ play: render.avi
 Video-Gen: 	VideoGen.cpp
 	g++ -I /usr/local/include/opencv -lm $(OPENCV) VideoGen.cpp -o Video-Gen   
 
+VideoLines: 	VideoLines.cpp
+	g++ -I /usr/local/include/opencv -lm $(OPENCV) VideoLines.cpp -o VideoLines
+
 infile.json: Video-Gen infile.avi
 	$(THISPATH)/Video-Gen > infile.json
 
