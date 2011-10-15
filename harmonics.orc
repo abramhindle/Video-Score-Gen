@@ -305,3 +305,57 @@ arm    reverb2 arm, 1.5, 0.1
         gkgbegdist2 = p4
         endin
 
+
+        instr Line1
+        itab = 1
+	imag = p4
+	iangle = p5
+	ix1 = p6
+	ix2 = p8
+	iy1 = p7
+	iy2 = p8
+	iamp = 1000 * imag/(640*480)
+	icps = 20 + 100*iangle 
+adelay1 init 0
+adelay2 init 0
+adelay3 init 0
+arand1  rand 1
+arand2  rand 1
+arand3  rand 1
+alp1    resonr adelay1, icps, 20
+alp2    resonr adelay2, 2*icps, 20
+alp3    resonr adelay3, 3*icps, 20
+asum1   clip arand1 + 0.1*alp1 , 0 , 5
+asum2   clip arand2 + 0.1*alp2 , 0 , 5
+asum3   clip arand3 + 0.1*alp3 , 0 , 5
+adelay1   delay asum1, 1/icps
+adelay2   delay asum2, 1/(2*icps)
+adelay3   delay asum3, 1/(3*icps)
+       out (asum1 + asum2 + asum3)*iamp
+       endin
+
+
+       instr Line
+       p3 = 3*p3
+       idur = p3
+       iamp = 1000*p4/(640*480)
+       icps = 20+1000*p5
+       itab = 1
+       imod = 2
+aenv    adsr 0.01*idur,0.1*idur,0.9,0.1*idur
+kres    = 0 ;line 0, p3, 1
+;kres    oscili 1,0.5,
+kcps = icps + kres
+amod	oscili	1, imod, itab
+;adump   delayr  1/icps + 2
+;adelay  deltapi 1/kcps
+asig    rand iamp
+acomb         comb asig,  0.1, 1/icps
+acomb1        comb asig, 0.1, 1/(2*icps)
+acomb2        comb asig, 0.1, 1/(3*icps)
+;ar       tone 3*(acomb+acomb1+acomb2), 1000
+ar      streson acomb+acomb1+acomb2, icps, 0.90
+arm     = ar * amod
+;        delayw arm        
+        out aenv*arm
+        endin

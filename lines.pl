@@ -1,4 +1,5 @@
 use JSON;
+use v5.10;
 use List::Util qw(shuffle);
 use strict;
 my $txt = "";
@@ -27,7 +28,16 @@ foreach my $entry (@$arr) {
     my $nsurf    = $entry->{SURF}->{nkeypoints} ;    
     my @lines    = @{$entry->{lines}};
     @lines = @lines[0..9];
-    my $time = 1.0* $first/$fps;
-    
+    my $dur = 1.0 / $fps;
+    my $time = $dur * $first;
+
+   foreach my $line (@lines) {
+	next unless ref($line);
+	my ($x1,$y1,$x2,$y2) = @$line;
+	my $angle = atan2($x2 - $x1,$y2 - $y1);
+	my $mag = sqrt(($x2 - $x1)**2 + ($y2 - $y1)**2);
+	say("i\"Line\" ".join(" ",map {sprintf('%0.6f',$_)} ($time,$dur,$mag,$angle,$x1,$y1,$x2,$y2)));
+   }
+
     $first++; 
 }
