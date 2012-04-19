@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
     //threshold accum..
     //min line length
     //max gap
-    HoughLinesP( dst, lines, 1, CV_PI/180, 300, 10, 30 );
+    HoughLinesP( dst, lines, 1, CV_PI/180, 80, 30, 10 );
     printf("\t,\"lines\":[\n");
     int s = lines.size();
     for( size_t i = 0; i < s; i++ )
